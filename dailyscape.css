@@ -629,85 +629,56 @@ footer a img {
     box-shadow: inset 0 0 0 9999px #4f3f00;
 }
 
-/* Timer rows manage their own status text, so hide the default check glyphs */
+/* Timer rows use the colored box purely as the click target; hide the default check glyphs */
 .activity_table tr[data-special="timer"] .activity_color .activity_check_off,
 .activity_table tr[data-special="timer"] .activity_color .activity_check_on {
     display: none;
     visibility: hidden;
 }
 
-.timer-status {
-    font-weight: normal;
-}
-.timer-hours-wrap {
-    white-space: nowrap;
-}
-.timer-hours-input {
-    width: 4.5em;
-    margin: 0 2px;
-    padding: 0 4px;
-    color-scheme: dark;
-    background: rgba(0, 0, 0, 0.35);
-    color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-/* Runesphere weekly input row */
-.rsphere-input-controls {
-    margin-top: 4px;
+/* Custom controls live in the grey name cell, on the same line as the task name */
+.activity_table td.activity_name .inline-controls {
+    position: absolute;
+    right: 3rem;            /* clear the hide button */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 14px;
     align-items: center;
+    justify-content: flex-end;
+    gap: 4px 10px;
+    max-width: 68%;
+    text-align: right;
+    line-height: 1.4;
+    font-size: 0.95rem;
 }
-.rsphere-field {
-    white-space: nowrap;
+.activity_table td.activity_name .inline-controls.rsphere-display {
+    display: block;         /* past / present / future stack on the right */
 }
+
+/* Shared small dark inputs */
+.timer-hours-input,
 .rsphere-input-controls input {
-    margin: 0 2px;
-    padding: 0 4px;
     color-scheme: dark;
     background: rgba(0, 0, 0, 0.35);
     color: inherit;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 3px;
+    padding: 0 4px;
+    margin: 0 1px;
 }
+.timer-hours-input { width: 4em; }
 .rsphere-input-controls input.rs-int-h,
 .rsphere-input-controls input.rs-int-m,
-.rsphere-input-controls input.rs-int-s {
-    width: 3.2em;
-}
+.rsphere-input-controls input.rs-int-s { width: 3em; }
+.timer-status,
+.timer-hours-wrap { white-space: nowrap; }
 
-/* Runesphere daily display (past / present / future) */
-.rsphere-display {
-    margin-top: 5px;
-    line-height: 1.45;
-}
-.rsphere-line {
-    display: block;
-}
-.rsphere-active {
-    color: #8ee08e;
-}
-.rsphere-inactive {
-    color: #d8b25a;
-}
-.rsphere-past {
-    opacity: 0.85;
-}
-.rsphere-future {
-    color: #9ec5ff;
-}
-.rsphere-prompt {
-    font-style: italic;
-    opacity: 0.85;
-}
-
-/* The description area is hidden in Compact Mode; keep the interactive control rows visible there. */
-.compact .activity_table tr[data-special="timer"] .activity_desc,
-.compact .activity_table tr[data-special="rsphereinput"] .activity_desc,
-.compact .activity_table tr[data-special="rspheredisplay"] .activity_desc {
-    display: inline-block;
-    visibility: visible;
-}
+/* Runesphere projection lines */
+.rsphere-line { display: block; }
+.rsphere-active { color: #8ee08e; }
+.rsphere-inactive { color: #d8b25a; }
+.rsphere-past { opacity: 0.85; }
+.rsphere-future { color: #9ec5ff; }
+.rsphere-prompt { font-style: italic; opacity: 0.85; }

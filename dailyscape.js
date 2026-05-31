@@ -35,7 +35,7 @@ var rs3daily = {
             {id: 566, quantity: 3, shop_price: 0}, //soul rune
         ]
     },
-    "runesphere": {task: "Runesphere", url: "https://runescape.wiki/w/Runesphere", runesphereDisplay: true, desc: "Hand in up to 1k rune dust for 25k xp"},
+    "runesphere": {task: "Runesphere", url: "https://runescape.wiki/w/Runesphere", runesphereDisplay: true},
     "book-of-char": {task: "Book of Char", url: "https://runescape.wiki/w/The_Book_of_Char", desc: "Drop logs on the ground and use book for fast firemaking xp"},
 };
 
@@ -117,7 +117,7 @@ var rs3weekly = {
     "gwd2-bounties": {task: "GWD2 Bounties", url: "https://runescape.wiki/w/Feng,_the_Bounty_Master", desc: "Up to 5 bounties can be stored for GWD2 reputation"},
     "fort-forinthry-bonus-xp": {task: "Fort Forinthry Bonus XP", url: "https://runescape.wiki/w/Town_Hall_(Fort_Forinthry)", desc:"Receive up to 15 small stars worth of bonus xp"},
     "advance-time": {task: "Advance Time", url: "https://runescape.wiki/w/Advance_Time", desc: "Use the Advance Time spell 3 times", short:true},
-    "runesphere-spawn-time": {task: "Runesphere Spawn Time", url: "https://runescape.wiki/w/Runesphere", runesphereInput: true, desc: "Enter the last spawn you saw (your local time) to project the next one on the Runesphere daily row. Re-anchor after each weekly reset."},
+    "runesphere-spawn-time": {task: "Runesphere Spawn Time", url: "https://runescape.wiki/w/Runesphere", runesphereInput: true},
 };
 
 var rs3weeklyshops = {
@@ -315,18 +315,22 @@ const getTimerHours = function(taskSlug, taskData) {
     return (taskData && taskData.timerHours) ? taskData.timerHours : 42;
 };
 
-const buildTimerControls = function(descSpan, taskSlug, taskData) {
-    descSpan.innerHTML = '<span class="timer-status"></span>'
+const buildTimerControls = function(nameCell, taskSlug, taskData) {
+    let wrap = document.createElement('span');
+    wrap.className = 'inline-controls timer-controls';
+    wrap.setAttribute('draggable', 'false');
+    wrap.innerHTML = '<span class="timer-status"></span>'
         + '<span class="timer-hours-wrap">Timer: '
         + '<input type="number" class="timer-hours-input" min="0.1" step="0.5" draggable="false"> h</span>';
-    let hoursInput = descSpan.querySelector('.timer-hours-input');
+    nameCell.appendChild(wrap);
+    let hoursInput = wrap.querySelector('.timer-hours-input');
     hoursInput.value = getTimerHours(taskSlug, taskData);
     stopRowInteraction(hoursInput);
     hoursInput.addEventListener('change', function() {
         let val = parseFloat(this.value);
         if (isNaN(val) || val <= 0) { val = (taskData && taskData.timerHours) ? taskData.timerHours : 42; this.value = val; }
         storage.setItem(profilePrefix + taskSlug + '-timerhours', val);
-        refreshTimerRow(descSpan.closest('tr'));
+        refreshTimerRow(nameCell.closest('tr'));
     });
 };
 
@@ -349,17 +353,17 @@ const refreshTimerRow = function(row) {
 
     if (startRaw === null) {
         row.dataset.completed = 'false'; // idle -> red
-        if (statusEl) { statusEl.innerHTML = '<strong>Idle</strong> — click to start &middot; '; }
+        if (statusEl) { statusEl.innerHTML = '<strong>Idle</strong>'; }
         return;
     }
     let end = parseInt(startRaw, 10) + hours * 3600 * 1000;
     let remaining = (end - Date.now()) / 1000;
     if (remaining <= 0) {
         row.dataset.completed = 'ready'; // ready -> yellow
-        if (statusEl) { statusEl.innerHTML = '<strong>READY</strong> — click to reset &middot; '; }
+        if (statusEl) { statusEl.innerHTML = '<strong>Ready!</strong>'; }
     } else {
         row.dataset.completed = 'true'; // growing -> green
-        if (statusEl) { statusEl.innerHTML = '<strong>Growing</strong> — ready in ' + formatDuration(remaining) + ' &middot; '; }
+        if (statusEl) { statusEl.innerHTML = '<strong>Growing</strong> — ready in ' + formatDuration(remaining); }
     }
 };
 
@@ -369,7 +373,7 @@ const getRunesphereInterval = function() {
     return (!isNaN(v) && v > 0) ? v : RUNESPHERE_DEFAULT_INTERVAL;
 };
 
-const buildRunesphereInput = function(descSpan, taskSlug, taskData) {
+const buildRunesphereInput = function(nameCell, taskSlug, taskData) {
     let interval = getRunesphereInterval();
     let ih = Math.floor(interval / 3600);
     let im = Math.floor(interval % 3600 / 60);
@@ -383,20 +387,20 @@ const buildRunesphereInput = function(descSpan, taskSlug, taskData) {
         anchorVal = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
 
-    descSpan.innerHTML = (taskData.desc ? taskData.desc + '<br>' : '')
-        + '<div class="rsphere-input-controls" draggable="false">'
-        + '<label class="rsphere-field">Last spawn (local): '
-        + '<input type="datetime-local" class="rsphere-anchor-input" draggable="false" value="' + anchorVal + '"></label>'
-        + '<span class="rsphere-field">Interval: '
+    let wrap = document.createElement('span');
+    wrap.className = 'inline-controls rsphere-input-controls';
+    wrap.setAttribute('draggable', 'false');
+    wrap.innerHTML = '<input type="datetime-local" class="rsphere-anchor-input" draggable="false" value="' + anchorVal + '">'
+        + '<span class="rsphere-field">'
         + '<input type="number" class="rs-int-h" min="0" draggable="false" value="' + ih + '">h '
         + '<input type="number" class="rs-int-m" min="0" max="59" draggable="false" value="' + im + '">m '
-        + '<input type="number" class="rs-int-s" min="0" max="59" draggable="false" value="' + is + '">s</span>'
-        + '</div>';
+        + '<input type="number" class="rs-int-s" min="0" max="59" draggable="false" value="' + is + '">s</span>';
+    nameCell.appendChild(wrap);
 
-    let anchorInput = descSpan.querySelector('.rsphere-anchor-input');
-    let hInput = descSpan.querySelector('.rs-int-h');
-    let mInput = descSpan.querySelector('.rs-int-m');
-    let sInput = descSpan.querySelector('.rs-int-s');
+    let anchorInput = wrap.querySelector('.rsphere-anchor-input');
+    let hInput = wrap.querySelector('.rs-int-h');
+    let mInput = wrap.querySelector('.rs-int-m');
+    let sInput = wrap.querySelector('.rs-int-s');
     [anchorInput, hInput, mInput, sInput].forEach(stopRowInteraction);
 
     anchorInput.addEventListener('change', function() {
@@ -418,10 +422,10 @@ const buildRunesphereInput = function(descSpan, taskSlug, taskData) {
     [hInput, mInput, sInput].forEach(function(inp) { inp.addEventListener('change', saveInterval); });
 };
 
-const buildRunesphereDisplay = function(descSpan) {
-    let disp = document.createElement('div');
-    disp.className = 'rsphere-display';
-    descSpan.appendChild(disp);
+const buildRunesphereDisplay = function(nameCell) {
+    let disp = document.createElement('span');
+    disp.className = 'inline-controls rsphere-display';
+    nameCell.appendChild(disp);
 };
 
 const refreshRunesphereDisplay = function() {
@@ -952,13 +956,13 @@ const populateTable = function(timeFrame) {
 
         if (data[taskSlug].timer) {
             newRow.dataset.special = 'timer';
-            buildTimerControls(newRowColor, taskSlug, data[taskSlug]);
+            buildTimerControls(newRow.querySelector('td.activity_name'), taskSlug, data[taskSlug]);
         } else if (data[taskSlug].runesphereInput) {
             newRow.dataset.special = 'rsphereinput';
-            buildRunesphereInput(newRowColor, taskSlug, data[taskSlug]);
+            buildRunesphereInput(newRow.querySelector('td.activity_name'), taskSlug, data[taskSlug]);
         } else if (data[taskSlug].runesphereDisplay) {
             newRow.dataset.special = 'rspheredisplay';
-            buildRunesphereDisplay(newRowColor);
+            buildRunesphereDisplay(newRow.querySelector('td.activity_name'));
         }
 
         tbody.appendChild(newRow);
@@ -1809,11 +1813,9 @@ const dataUpdatedCheck = function() {
            if (xmlhttp.status == 200) {
                console.log(xmlhttp.responseText);
            }
-           else if (xmlhttp.status == 400) {
-              alert('There was an error 400');
-           }
            else {
-               alert('something else other than 200 was returned');
+               // No rsapiupdated.json (e.g. running without full rsdata) - log quietly, never alert.
+               console.log('dataUpdatedCheck: rsapiupdated.json returned ' + xmlhttp.status);
            }
         }
     };
